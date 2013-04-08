@@ -1,6 +1,6 @@
 # simple-netstat
 
-At firs I wanted little program, that shutdown my pc when all night downloads have been completed. However, it grow to simple netstat.
+At first I wanted little program, that shutdown my pc when all night downloads have been completed. However, it grow to simple netstat.
 
 
 # Options
@@ -15,7 +15,7 @@ At firs I wanted little program, that shutdown my pc when all night downloads ha
 
 # Log file
 -----------
-Log file is something like this:
+Log file is something like this (ignore second line):
 
 	Interface: wlan0  interval: 5 idleSpeed: 250
 	12:47:20;18884;2813;0;0
@@ -28,6 +28,7 @@ Log file is something like this:
 	12:47:55;4;0;0;0
 
 format:
+
 	hour;downloaded kB/interval;uploaded kB/interval;download speed below Idle Speed;upload speed below Idle Speed
 
 You can paste log file to Calc or Excel to make charts or stuff like that.
