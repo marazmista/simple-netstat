@@ -21,11 +21,11 @@ bool selectInterface();
 void askVerbose();
 void manualConfig();
 void saveConfig();
-bool checkExistingConfig(string&, bool readOnlyMode);
+bool checkExistingConfig(string&, bool);
 void askInterval();
 
 static short readLag,idleSpeed,idleCheckTriesRX,idleCheckTriesTX,mode;
-static string netInterface,rxtxFilePath,configPath = "config";
+static string netInterface,rxtxFilePath,configPath;
 static double rxLast_, txLast_;
 bool verbose;
 
@@ -128,7 +128,6 @@ bool checkExistingConfig(string &cFilePath, bool readOnlyMode)
             configFile.close();
             return true;
         }
-
         configFile >> mode;
         configFile >> netInterface;
         rxtxFilePath = "/sys/class/net/"+ netInterface + "/statistics/";
@@ -138,18 +137,20 @@ bool checkExistingConfig(string &cFilePath, bool readOnlyMode)
         idleCheckTriesTX = idleCheckTriesRX;
         configFile >> verbose;
 
+        string m = (mode == 1) ? " (ignored)" : "";
         cout << "* Current config: \n"
              << "* Mode: " << mode << endl
              << "* Interface: " << netInterface << endl
-             << "* Interval: " << readLag << endl
-             << "* Idle speed: " << idleSpeed << endl
-             << "* Passes: " << idleCheckTriesRX << endl
+             << "* Interval: " << readLag << m << endl
+             << "* Idle speed: " << idleSpeed << m<< endl
+             << "* Passes: " << idleCheckTriesRX << m << endl
              << "* Verbose: " << verbose << endl;
 
         configFile.close();
         return true;
     } else {
-        cout << endl << "! Opps, can't read config file." << endl;
+        if (!cFilePath.empty())
+            cout << endl << "! Opps, can't read config file." << endl;
         return false;
     }
 }
@@ -160,13 +161,14 @@ void initialSetup() {
         cin >> mode;
     }
 
-
     switch (mode) {
     case 1:
         cout << "* Monitor mode selected." << endl;
-        selectInterface();
-        askInterval();
-        askVerbose();
+        if (!checkExistingConfig(configPath,false)) {
+            selectInterface();
+            askInterval();
+            askVerbose();
+        }
         break;
     case 2:
         if (!checkExistingConfig(configPath,false)) {
