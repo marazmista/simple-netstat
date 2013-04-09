@@ -122,9 +122,8 @@ bool checkExistingConfig(string &cFilePath, bool readOnlyMode)
     ifstream configFile;
     configFile.open(cFilePath);
     if (configFile.is_open()) {
-        cout << endl << "* Great, found config file, reading..." << endl;
-
         if (readOnlyMode) {
+            cout << endl << "* Great, found config file, reading..." << endl;
             configFile >> mode;
             configFile.close();
             return true;
@@ -149,20 +148,22 @@ bool checkExistingConfig(string &cFilePath, bool readOnlyMode)
 
         configFile.close();
         return true;
-    } else
+    } else {
+        cout << endl << "! Opps, can't read config file." << endl;
         return false;
+    }
 }
 
 void initialSetup() {
-    if (!configPath.empty()) {
-        checkExistingConfig(configPath,true);
-    } else {
+    if (!checkExistingConfig(configPath,true)) {
         cout << endl << "* Select mode [1 - monitor; 2 - shutdownApp; 3 - shutdownPC]: " << endl << "> ";
         cin >> mode;
     }
 
+
     switch (mode) {
     case 1:
+        cout << "* Monitor mode selected." << endl;
         selectInterface();
         askInterval();
         askVerbose();
