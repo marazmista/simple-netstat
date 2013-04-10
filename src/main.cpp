@@ -92,7 +92,7 @@ void manualConfig()
 void saveConfig()
 {
     bool sConfig;
-    cout << "Save config? (0-1)";
+    cout << "Save config? (0-1): ";
     cin >> sConfig;
 
     if (sConfig) {
@@ -181,6 +181,7 @@ void initialSetup() {
             manualConfig();
             saveConfig();
         }
+        break;
     default:
         cout << "! Bad mode selected. Exit." << endl;
         exit(-1);
