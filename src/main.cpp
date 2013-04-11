@@ -15,7 +15,7 @@ using namespace std;
 void initialSetup();
 void watchNetwork();
 void pcOff();
-int readValue(double&, string);
+int readValue(long&, string);
 string timeNow(bool);
 bool selectInterface();
 void askVerbose();
@@ -26,7 +26,7 @@ void askInterval();
 
 static short readLag,idleSpeed,idleCheckTriesRX,idleCheckTriesTX,mode;
 static string netInterface,rxtxFilePath,configPath;
-static double rxLast_, txLast_;
+static long rxLast_, txLast_;
 bool verbose;
 
 int main(int argc, char** argv)
@@ -212,15 +212,8 @@ void watchNetwork() {
         txDiff = readValue(txLast_,"tx_bytes");
 
         if (mode != 1) {
-            if (rxDiff < idleSpeed)
-                rxPass++;
-            else
-                rxPass = 0;
-
-            if (txDiff < idleSpeed)
-                txPass++;
-            else
-                txPass = 0;
+            rxPass = (rxDiff < idleSpeed) ? rxPass+=1 : 0;
+            txPass = (txDiff < idleSpeed) ? txPass+=1 : 0;
         }
 
         if (verbose)
@@ -248,7 +241,7 @@ string timeNow(bool toLogName) {
     }
 }
 
-int readValue(double &lastValue, string filename) {
+int readValue(long &lastValue, string filename) {
     ifstream file;
     file.open(rxtxFilePath + filename);
 
@@ -256,8 +249,8 @@ int readValue(double &lastValue, string filename) {
     file.getline(tmp,25);
     file.close();
 
-    double nowValue(stod(tmp));
-    double diff((nowValue - lastValue) / 1024);
+    long nowValue(stod(tmp));
+    long diff((nowValue - lastValue) / 1024);
     lastValue = nowValue;
     return (int)diff;
 
