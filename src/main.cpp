@@ -141,7 +141,7 @@ bool checkExistingConfig(string &cFilePath, bool readOnlyMode)
         cout << "* Current config: \n"
              << "* Mode: " << mode << endl
              << "* Interface: " << netInterface << endl
-             << "* Interval: " << readLag << m << endl
+             << "* Interval: " << readLag << endl
              << "* Idle speed: " << idleSpeed << m<< endl
              << "* Passes: " << idleCheckTriesRX << m << endl
              << "* Verbose: " << verbose << endl;
@@ -208,8 +208,15 @@ void watchNetwork() {
         idleCheckTriesRX = idleCheckTriesTX = 1;
 
     while ((idleCheckTriesRX > rxPass) || (idleCheckTriesTX > txPass)) {
-        rxDiff = readValue(rxLast_,"rx_bytes");
-        txDiff = readValue(txLast_,"tx_bytes");
+        try {
+            rxDiff = readValue(rxLast_,"rx_bytes");
+            txDiff = readValue(txLast_,"tx_bytes");
+        }
+        catch (char * ex) {
+            cout << timeNow(false) << "* Read values error" << endl;
+            logFile << timeNow(true) << "* Read values error" << endl;
+            continue;
+        }
 
         if (mode != 1) {
             rxPass = (rxDiff < idleSpeed) ? rxPass+=1 : 0;
