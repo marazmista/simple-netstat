@@ -239,7 +239,7 @@ string timeNow(bool toLogName) {
     stringstream os;
 
     if (toLogName) {
-        os << localtm->tm_mday << "-" << localtm->tm_mon + 1 << "-" << localtm->tm_year + 1900 << "_"
+        os << localtm->tm_year + 1900 << "-" << localtm->tm_mon + 1 << "-" << localtm->tm_mday << "_"
            << localtm->tm_hour << "-" << localtm->tm_min << "-" << localtm->tm_sec;
         return os.str();
     } else {
@@ -252,15 +252,17 @@ int readValue(long &lastValue, string filename) {
     ifstream file;
     file.open(rxtxFilePath + filename);
 
-    char tmp[25];
-    file.getline(tmp,25);
-    file.close();
+    if (file.good()) {
+        char tmp[25];
+        file.getline(tmp,25);
+        file.close();
 
-    long nowValue(stod(tmp));
-    long diff((nowValue - lastValue) / 1024);
-    lastValue = nowValue;
-    return (int)diff;
-
+        long nowValue(stod(tmp));
+        long diff((nowValue - lastValue) / 1024);
+        lastValue = nowValue;
+        return (int)diff;
+    } else
+        return 0;
 }
 
 void pcOff() {
