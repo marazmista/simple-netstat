@@ -16,7 +16,7 @@ void initialSetup();
 void watchNetwork();
 void pcOff();
 int readValue(long&, string);
-string timeNow(bool);
+string timeNow(char f);
 bool selectInterface();
 void askVerbose();
 void manualConfig();
@@ -190,8 +190,11 @@ void initialSetup() {
 }
 
 void watchNetwork() {
+    bool nextLogDay = false; // for checking if next day than logfile
+
     ofstream logFile;
-    logFile.open(timeNow(true)+"_sessionLog");
+    string logFileDate = timeNow(3);
+    logFile.open(logFileDate+"_sessionLog",ios::app);
     if (!logFile.is_open())
         cout << "! Error saving session log file. Proceeding without log file." << endl;
 
@@ -208,13 +211,17 @@ void watchNetwork() {
         idleCheckTriesRX = idleCheckTriesTX = 1;
 
     while ((idleCheckTriesRX > rxPass) || (idleCheckTriesTX > txPass)) {
+        if (logFileDate != timeNow(3)) {
+            nextLogDay = true;
+            break;
+        }
+
         try {
             rxDiff = readValue(rxLast_,"rx_bytes");
             txDiff = readValue(txLast_,"tx_bytes");
-        }
-        catch (char * ex) {
-            cout << timeNow(false) << "* Read values error" << endl;
-            logFile << timeNow(true) << "* Read values error" << endl;
+        } catch (char * ex) {
+            cout << timeNow(2) << "! Read values error" << endl;
+            logFile << timeNow(1) << "! Read values error" << endl;
             continue;
         }
 
@@ -224,26 +231,37 @@ void watchNetwork() {
         }
 
         if (verbose)
-            cout << "  (" << timeNow(false) << ")  D:" << rxDiff << " U:" << txDiff << " | dPass: " << rxPass <<  " uPass: " << txPass << endl;
+            cout << "  (" << timeNow(2) << ")  D:" << rxDiff << " U:" << txDiff << " | dPass: " << rxPass <<  " uPass: " << txPass << endl;
 
-        logFile << timeNow(false) << ";" << rxDiff << ";" << txDiff << ";"<< rxPass << ";" << txPass << endl;
+        logFile << timeNow(2) << ";" << rxDiff << ";" << txDiff << ";"<< rxPass << ";" << txPass << endl;
         usleep(readLag*1000*1000);
     }
 
     logFile.close();
+
+    if (nextLogDay) {
+        cout << "* Creating new log: "<< timeNow(3) << endl;
+        watchNetwork();
+    }
 }
 
-string timeNow(bool toLogName) {
+string timeNow(char f) {
     time_t now = time(0);
     tm *localtm = localtime(&now);
     stringstream os;
 
-    if (toLogName) {
+    switch (f) {
+    case 1: // old log filename and full date in log if error
         os << localtm->tm_year + 1900 << "-" << localtm->tm_mon + 1 << "-" << localtm->tm_mday << "_"
-           << localtm->tm_hour << "-" << localtm->tm_min << "-" << localtm->tm_sec;
+              << localtm->tm_hour << "-" << localtm->tm_min << "-" << localtm->tm_sec;
         return os.str();
-    } else {
+
+    case 2: // to verbose output and in log timestamps
         os << localtm->tm_hour << ":" << localtm->tm_min << ":" << localtm->tm_sec;
+        return os.str();
+
+    case 3: // for date checking and log filename
+        os << localtm->tm_year + 1900 << "-" << localtm->tm_mon + 1 << "-" << localtm->tm_mday;
         return os.str();
     }
 }
